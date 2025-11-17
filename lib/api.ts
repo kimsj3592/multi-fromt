@@ -18,11 +18,20 @@ interface ApiResponse {
 
 export async function fetchSwapActionRequests(): Promise<SwapActionRequest[]> {
   try {
-    const apiBaseUrl = getApiUrl();
-    // apiBaseUrl에 이미 /api가 포함되어 있으면 그대로 사용, 없으면 /api 추가
-    // 최종 URL: {apiBaseUrl}/api/v2/dex/swap-action-requests
-    const baseUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl : `${apiBaseUrl}/api`;
-    const apiUrl = `${baseUrl}/api/v2/dex/swap-action-requests`;
+    // 프로덕션 환경에서는 Next.js API Route를 통해 프록시 호출
+    // 로컬 개발 환경에서는 직접 API 호출
+    const isProduction = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+    let apiUrl: string;
+    if (isProduction) {
+      // Vercel 배포 환경: Next.js API Route 사용
+      apiUrl = '/api/swap-action-requests';
+    } else {
+      // 로컬 개발 환경: 직접 API 호출
+      const apiBaseUrl = getApiUrl();
+      const baseUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl : `${apiBaseUrl}/api`;
+      apiUrl = `${baseUrl}/api/v2/dex/swap-action-requests`;
+    }
 
     console.log('API 요청 URL:', apiUrl); // 디버깅용
 
